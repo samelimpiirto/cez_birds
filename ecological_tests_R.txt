@@ -1,0 +1,198 @@
+##############################
+#Ecological factors tests
+# importing body condition and age datasets (all birds)
+
+library(readxl)
+ALL_GTA_FIXED <- read_excel("/scratch/project_2007483/Cherno_microbio/decontamPHYLOSEQ/all_birdies_for_ecology/ALL_GTA_FIXED.xlsx", 
+                            col_types = c("text", "text", "text", 
+                                          "text", "date", "date", "text", "text", 
+                                          "text", "numeric", "numeric", "numeric", 
+                                          "numeric", "text", "text", "numeric", 
+                                          "numeric", "text", "text", "numeric", 
+                                          "text"))
+
+gta <- ALL_GTA_FIXED
+View(ALL_GTA_FIXED)
+View(gtn)
+
+library(readxl)
+ALL_GTN_FIXED <- read_excel("/scratch/project_2007483/Cherno_microbio/decontamPHYLOSEQ/all_birdies_for_ecology/ALL_GTN_FIXED.xlsx", 
+                            col_types = c("text", "text", "text", 
+                                          "numeric", "numeric", "text", "text", 
+                                          "text", "numeric", "numeric", "numeric", 
+                                          "numeric", "text", "text", "numeric", 
+                                          "numeric", "text", "numeric", "numeric", 
+                                          "text"))
+View(ALL_GTN_FIXED)
+gtn <- ALL_GTN_FIXED
+library(readxl)
+ALL_PF_FIXED <- read_excel("/scratch/project_2007483/Cherno_microbio/decontamPHYLOSEQ/all_birdies_for_ecology/ALL_PF_FIXED.xlsx", 
+                           col_types = c("text", "numeric", "text", 
+                                         "text", "date", "date", "text", "text", 
+                                         "text", "numeric", "numeric", "numeric", 
+                                         "numeric", "text", "text", "numeric", 
+                                         "numeric", "text", "numeric", "numeric", 
+                                         "text"))
+pf <- ALL_PF_FIXED
+
+#sex differences for tapio
+gtsex <- gtn[-which(gtn$sex == "NA"), ]
+selected_data <- gtsex %>% select(sex, zone)
+contingency_table <- table(selected_data$sex, selected_data$zone)
+print(contingency_table)
+# Perform chi-square test
+chi_square_test <- chisq.test(contingency_table)
+# View the results
+print(chi_square_test)
+
+
+View(ALL_PF_FIXED)
+View(pf)
+library(lme4)
+library(lmerTest)
+library(modelr)
+
+#includes all birds
+#gtn
+Malli1= lmer(body_condition ~ age+categoryHC+age:categoryHC+brood_size+forest_type+hatch_value+(1|box)+(1|plot), data=gtn)
+Malli1= lmer(body_condition ~ age+categoryHC+forest_type+hatch_value+(1|box)+(1|plot), data=gtn)
+Malli1= lmer(body_condition ~ age+radiation+forest_type+hatch_value+(1|box)+(1|plot), data=gtn)
+summary(Malli1, ddf="Kenward-Roger")
+anova(Malli1, ddf="Kenward-Roger") 
+
+#PF
+Malli1= lmer(body_condition ~ age+categoryHC+age:categoryHC+brood_size+forest_type+hatch_value+(1|box)+(1|plot), data=pf)
+Malli1= lmer(body_condition ~ categoryHC+forest_type+(1|box)+(1|plot), data=pf)
+summary(Malli1, ddf="Kenward-Roger")
+anova(Malli1, ddf="Kenward-Roger")
+
+#GTA
+Malli1= lmer(body_condition ~ categoryHC+brood_size+forest_type+sex+(1|box)+(1|plot), data=gta)
+Malli1= lmer(body_condition ~ radiation+forest_type+(1|box)+(1|plot), data=gta)
+
+summary(Malli1, ddf="Kenward-Roger")
+anova(Malli1, ddf="Kenward-Roger") 
+resp = simulateResiduals(Malli1)
+plot(resp, rank = T)
+
+resp = simulateResiduals(Malli1)
+plot(resp, rank = T)
+summary(Malli1, ddf="Kenward-Roger")
+anova(Malli1, ddf="Kenward-Roger") 
+
+#############
+#updated nestbox data<<<<<<<<<<<<<<<<<
+
+library(readxl)
+allnestboxes <- read_excel("/scratch/project_2007483/Cherno_microbio/decontamPHYLOSEQ/all_birdies_for_ecology/allnestboxes.xlsx", 
+                           col_types = c("text", "text", "numeric", 
+                                         "text", "text", "text", "text", "numeric", 
+                                         "numeric", "numeric", "numeric", 
+                                         "numeric", "text"))
+View(allnestboxes)
+
+gtnest <- allnestboxes[-which(allnestboxes$species == "PF"), ]
+pfnest <- allnestboxes[-which(allnestboxes$species == "GT"), ]
+hotgt <- gtnest[-which(gtnest$zone == "C"), ]
+cleangt <- gtnest[-which(gtnest$zone == "H"), ]
+hotpf <- pfnest[-which(pfnest$zone == "C"), ]
+cleanpf <- pfnest[-which(pfnest$zone == "H"), ]
+nestd <- nestsdata
+summary(gtnest$hatch_value)
+hotbirds <- allnestboxes[-which(allnestboxes$zone == "C"), ]
+cleanbirds <- allnestboxes[-which(allnestboxes$zone == "H"), ]
+
+hist(hotbirds$radiation)
+
+####### NEST BASED TESTS
+#OCCUPANCY
+
+library(readxl)
+occupancy_all <- read_excel("/scratch/project_2007483/decontamPHYLOSEQ/all_birdies_for_ecology/occupancy_all.xlsx")
+View(occupancy_all)
+occ <- occupancy_all
+ocpf <- occ[-which(occ$Species == "GT"), ]
+
+ocgt <- occgt
+
+library()
+chisq <- chisq.test(occ)
+chisq$observed
+chisq
+chisq.test(ocgt$zone, ocgt$Species, correct=FALSE)
+chisq.test(ocpf$zone, ocpf$Species, correct=FALSE)
+
+####Radiation
+#does radiation differ between H and C areas?
+## WILCOXON
+library(tidyverse)
+library(rstatix)
+library(ggpubr)
+
+#wilcox test
+# Show a sample of the data by group
+set.seed(123)
+allnestboxes %>% sample_n_by(ntotal, size = 2)
+
+allnestboxes %>%
+  group_by(zone) %>%
+  get_summary_stats(radiation, type = "median_iqr")
+
+bxp <- ggboxplot(
+  allnestboxes, x = "zone", y = "radiation", 
+  ylab = "radiation", xlab = "zone", add = "jitter"
+)
+bxp
+
+stat.test <- allnestboxes %>% 
+  wilcox_test(radiation ~ zone) %>%
+  add_significance()
+stat.test
+
+allnestboxes %>% wilcox_effsize(radiation ~ zone)
+
+stat.test <- stat.test %>% add_xy_position(x = "zone")
+bxp + 
+  stat_pvalue_manual(stat.test, tip.length = 0) +
+  labs(subtitle = get_test_label(stat.test, detailed = TRUE))
+
+
+#testing if average age differ between H and C areas
+##>>>>>Malli1= lmer(age ~ categoryHC+forest_type+(1|box)+(1|plot), data=gtn)
+Malli1= lmer(age ~ zone+forest_type+(1|plot), data=gtnest)
+
+#pf
+Malli1= lmer(age ~ zone+forest_type+(1|plot), data=pfnest)
+plot(gtn$radiation)
+summary(Malli1, ddf="Kenward-Roger")
+anova(Malli1, ddf="Kenward-Roger") 
+
+hgtn <- pf[-which(gtn$zone == "C"), ]
+cgtn <- pf[-which(gtn$zone == "H"), ]
+summary(gtn$age)
+summary(hpf$age)
+
+### broodsize
+
+Malli1= lmer(brood_size ~ zone+forest_type+(1|plot), data=gtnest)
+Malli1= lmer(brood_size ~ zone+(1|plot), data=gtnest)
+
+resp = simulateResiduals(Malli1)
+plot(resp, rank = T)
+summary(Malli1, ddf="Kenward-Roger")
+anova(Malli1, ddf="Kenward-Roger") 
+
+#####hatching date 
+Malli1= lmer(hatch_value ~ zone+forest_type+(1|plot), data=gtnest)
+Malli1= lmer(hatch_value ~ zone, data=gtnest)
+
+Malli1= lmer(hatch_value ~ zone+forest_type+(1|plot), data=pfnest)
+
+resp = simulateResiduals(Malli1)
+plot(resp, rank = T)
+summary(Malli1, ddf="Kenward-Roger")
+anova(Malli1, ddf="Kenward-Roger") 
+
+Malli1= lmer(hatch_value ~ radiation, data=gtnest)
+Malli1= lmer(hatch_value ~ zone+forest_type, data=gtnest)
+library(glm)
